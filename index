@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경주·포항 어린이 지진 안전 미션</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --google-blue: #4285F4; --google-red: #EA4335; --google-yellow: #FBBC05; --google-green: #34A853; }
+        body { font-family: 'Gaegu', cursive; background-color: #F8F9FA; margin: 0; padding: 20px; color: #3C4043; overflow-x: hidden; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 40px; padding: 30px; border: 5px solid var(--google-blue); box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; }
+        .header { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 20px; }
+        .progress-bar { width: 100%; height: 20px; background: #E8EAED; border-radius: 10px; margin-bottom: 30px; overflow: hidden; border: 2px solid #ddd; }
+        .progress { height: 100%; background: linear-gradient(90deg, var(--google-yellow), var(--google-green)); width: 0%; transition: 0.5s; }
+        
+        .card { min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .emoji-box { font-size: 6rem; margin-bottom: 10px; }
+        .info-text { font-size: 1.6rem; line-height: 1.5; background: #FFF9E1; padding: 20px; border-radius: 25px; border: 3px dashed var(--google-yellow); width: 90%; margin-bottom: 20px; word-break: keep-all; }
+        
+        /* 공통 버튼 스타일 */
+        button { font-family: 'Gaegu', cursive; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.1); margin: 10px 0; }
+
+        /* [수정] 첫 화면 및 완료 화면의 파란색 버튼 스타일 */
+        .btn-next { 
+            background-color: var(--google-blue); 
+            color: white; 
+            /* 가로 길이를 조금 늘림 (기존 90% -> 95%) */
+            width: 95%; 
+            /* 글씨 크기를 3포인트 크게 (기존 1.7rem -> 약 2.0rem) */
+            font-size: 2.0rem; 
+            padding: 18px 30px; /* 크기에 맞춰 패딩도 살짝 조정 */
+            border-radius: 40px;
+        }
+        .btn-next:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
+
+        /* 퀴즈 선택지 버튼 스타일 (기존 유지) */
+        .btn-option { 
+            background-color: white; 
+            border: 3px solid #DADCE0; 
+            color: #3C4043; 
+            width: 90%;
+            font-size: 1.7rem;
+            padding: 15px 30px;
+            border-radius: 35px;
+        }
+        .btn-option:hover { background-color: #F1F3F4; border-color: var(--google-blue); }
+        
+        .shake { animation: shake-anim 0.4s infinite; }
+        @keyframes shake-anim { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(3deg) translate(-2px, -2px); } 75% { transform: rotate(-3deg) translate(2px, 2px); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <span style="font-size: 1.8rem; color: var(--google-blue); font-weight: bold;">🤖 구글 AI와 함께하는</span>
+        <span style="font-size: 1.4rem; color: #5F6368;">경주·포항 지진 안전 대작전!</span>
+    </div>
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+    
+    <div id="content" class="card">
+        </div>
+</div>
+
+<script>
+    const missionData = [
+        {
+            title: "안녕! 용감한 친구들!",
+            text: "경주와 포항을 지키는 1학년 친구들! 지진이 나서 땅이 '흔들흔들'하면 어떻게 할까요? 저랑 같이 연습해봐요!",
+            emoji: "👋",
+            shake: false,
+            type: "info",
+            btnText: "미션 시작하기!"
+        },
+        {
+            title: "쿵! 땅이 흔들려요!",
+            text: "우와아! 땅이 흔들려요! 가장 먼저 어디를 보호해야 할까요?",
+            emoji: "🏠",
+            shake: true,
+            type: "quiz",
+            options: ["머리를 감싸고 식탁 밑으로!", "가방을 챙기러 방에 가기"],
+            correct: 0,
+            feedback: "맞았어요! 머리가 다치지 않게 쏙 숨어야 해요!"
+        },
+        {
+            title: "흔들림이 멈췄어요!",
+            text: "이제 흔들리지 않아요! 밖으로 나갈 때는 무엇을 조심할까요?",
+            emoji: "🚪",
+            type: "quiz",
+            options: ["빨리 엘리베이터 타기", "계단으로 조심조심 내려가기"],
+            correct: 1,
+            feedback: "딩동댕! 엘리베이터는 갇힐 수 있어서 위험해요!"
+        },
+        {
+            title: "어디로 도망갈까요?",
+            text: "건물 밖으로 나왔어요! 유리창이 깨질 수도 있는데, 어디가 안전할까요?",
+            emoji: "🏃",
+            type: "quiz",
+            options: ["담벼락 옆에서 쉬기", "운동장처럼 넓은 곳으로 가기"],
+            correct: 1,
+            feedback: "최고예요! 아무것도 없는 넓은 곳이 가장 안전해요!"
+        },
+        {
+            title: "마지막 미션!",
+            text: "안전한 곳에 도착하면 누구의 말을 들어야 할까요?",
+            emoji: "📢",
+            type: "quiz",
+            options: ["선생님과 부모님 말씀 듣기", "혼자서 멀리 뛰어놀기"],
+            correct: 0,
+            feedback: "정답! 어른들의 안내를 잘 따라야 해요!"
+        }
+    ];
+
+    let step = 0;
+
+    function render() {
+        const display = document.getElementById('content');
+        const progress = document.getElementById('progress');
+        
+        if (step >= missionData.length) {
+            showFinal();
+            return;
+        }
+
+        const data = missionData[step];
+        progress.style.width = `${(step / missionData.length) * 100}%`;
+
+        let html = `<h1 style="color:var(--google-blue); margin-top:0;">${data.title}</h1>`;
+        html += `<div class="emoji-box ${data.shake ? 'shake' : ''}">${data.emoji}</div>`;
+        html += `<div class="info-text">${data.text}</div>`;
+
+        if (data.type === "info") {
+            html += `<button class="btn-next" onclick="nextStep()">${data.btnText}</button>`;
+        } else {
+            data.options.forEach((opt, idx) => {
+                html += `<button class="btn-option" onclick="checkAnswer(${idx})">${opt}</button>`;
+            });
+        }
+
+        display.innerHTML = html;
+        speak(data.title + ". " + data.text);
+    }
+
+    function checkAnswer(idx) {
+        if (idx === missionData[step].correct) {
+            speak(missionData[step].feedback);
+            alert("✨ " + missionData[step].feedback);
+            nextStep();
+        } else {
+            speak("앗, 그건 위험할 수 있어요. 다시 생각해볼까요?");
+            alert("다시 한번 생각해봐요! 할 수 있어요! 💪");
+        }
+    }
+
+    function nextStep() {
+        step++;
+        render();
+    }
+
+    function showFinal() {
+        const display = document.getElementById('content');
+        document.getElementById('progress').style.width = "100%";
+        display.innerHTML = `
+            <h1 style="color:var(--google-green)">🎖️ 지진 안전 대장 🎖️</h1>
+            <div class="emoji-box">🏆</div>
+            <div class="info-text">
+                <b>축하합니다!</b><br>
+                경주와 포항을 지키는 멋진<br>
+                <b>1학년 지진 안전 대장</b>이 되었어요!
+            </div>
+            <p style="font-size:1.2rem">집에 가서 부모님께도 알려주세요!</p>
+            <button class="btn-next" onclick="location.reload()">한 번 더 연습하기</button>
+        `;
+        speak("축하합니다! 여러분은 이제 자랑스러운 지진 안전 대장님이에요!");
+    }
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'ko-KR';
+        msg.rate = 1.1; // 1학년 아이들이 지루하지 않게 약간 빠르게
+        window.speechSynthesis.speak(msg);
+    }
+
+    render();
+</script>
+</body>
+</html>
