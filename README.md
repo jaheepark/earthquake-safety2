@@ -1,1 +1,0 @@
-# earthquake-safety2
